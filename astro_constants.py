@@ -1,3 +1,5 @@
+G = 6.67
+
 masses = {'Mercury': 3.285E23,
           'Venus': 4.867E24,
           'Earth': 5.972E24,
