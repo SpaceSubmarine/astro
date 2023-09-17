@@ -1,46 +1,17 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import ode
-
 earth_radius = 6378  # km
 earth_mu = 398600  # km^3/s^2
 
+'''
+This code is extracted from the Youtube tutorial 
+The Two Body Problem / ODE Solvers | Orbital Mechanics with Python 2
+by Alfonso Gonzalez 
+url = https://www.youtube.com/watch?v=7JY44m6eemo&list=PLOIRBaljOV8gn074rWFWYP1dCr2dJqWab&index=52&t=997s&ab_channel=AlfonsoGonzalez-Astrodynamics%26SEPodcast
+'''
 
-def diff_eq(t, y, mu):
-    rx, ry, rz, vx, vy, vz = y
-    r = np.array([rx, ry, rz])
-    norm_r = np.linalg.norm(r)
-    ax, ay, az = -r * mu / norm_r ** 3
-    return [vx, vy, vz, ax, ay, az]
-
-
-if __name__ == '__main__':
-    r_mag = earth_radius + 500  # km
-    v_mag = np.sqrt(earth_mu / r_mag)
-    r0 = [r_mag, 0, 0]
-    v0 = [0, v_mag, 0]
-    tspan = 100 * 60  # seconds
-    dt = 100  # seconds
-    n_steps = int(np.ceil(tspan / dt))
-    ys = np.zeros((n_steps, 6))
-    ts = np.zeros((n_steps, 1))
-    y0 = r0 + v0
-    ys[0] = np.array(y0)
-    step = 1
-
-    solver = ode(diff_eq)
-    solver.set_integrator('lsoda')
-    solver.set_initial_value(y0, 0)
-    solver.set_f_params(earth_mu)
-
-    while solver.successful() and step < n_steps:
-        solver.integrate(solver.t + dt)
-        ts[step] = solver.t
-        ys[step] = solver.y
-        step += 1
-
-    rs = ys[:, :3]
-
+def plot():
     plt.style.use('dark_background')
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -57,3 +28,68 @@ if __name__ == '__main__':
     ax.plot(rs[:, 0], rs[:, 1], rs[:, 2], color="white", linewidth=2)
 
     plt.show()
+
+
+def diff_eq(t, y, mu):  # our differential equation
+    # unpack state
+    # "t" is the time
+    # "y" is the position and velocity
+    # "mu" is the gravitational parameter
+    rx, ry, rz, vx, vy, vz = y
+
+    # for convenience, we define the position array as a position vector
+    r = np.array([rx, ry, rz])
+    # we also want the norm of the radius vector
+    norm_r = np.linalg.norm(r)
+    # Gravitational acceleration for the three components
+    # with negative sign as the acceleration is pointing to the
+    # center of the attracting body
+    ax, ay, az = -r * mu / norm_r ** 3
+
+    return [vx, vy, vz, ax, ay, az]
+
+
+
+if __name__ == '__main__':
+    # initial conditions of orbit parameters
+    r_mag = earth_radius + 500  # km
+    v_mag = np.sqrt(earth_mu / r_mag)
+
+    # initial position and velocity vectors
+    # for a circular orbit, the inclination is zero
+    r0 = [r_mag, 0, 0]
+    v0 = [0, v_mag, 0]
+
+    # timespan
+    tspan = 100 * 60  # minutes * seconds
+
+    # timestep
+    dt = 100  # seconds
+
+    # total number of steps
+    n_steps = int(np.ceil(tspan / dt))
+
+    # initialize arrays (pre allocating memory)
+    ys = np.zeros((n_steps, 6))
+    ts = np.zeros((n_steps, 1))
+    y0 = r0 + v0
+
+    ys[0] = np.array(y0)  # initial condition
+    step = 1
+
+    solver = ode(diff_eq)
+    solver.set_integrator('lsoda')
+    solver.set_initial_value(y0, 0)
+    solver.set_f_params(earth_mu)
+
+    # Propagate the orbit
+    while solver.successful() and step < n_steps:
+        solver.integrate(solver.t + dt)
+        ts[step] = solver.t
+        ys[step] = solver.y
+        step += 1
+
+    # extracting values of position from 'ys'
+    rs = ys[:, :3]
+
+    plot()
