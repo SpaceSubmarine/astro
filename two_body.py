@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import ode
+
 earth_radius = 6378  # km
 earth_mu = 398600  # km^3/s^2
 
@@ -10,6 +11,7 @@ The Two Body Problem / ODE Solvers | Orbital Mechanics with Python 2
 by Alfonso Gonzalez 
 url = https://www.youtube.com/watch?v=7JY44m6eemo&list=PLOIRBaljOV8gn074rWFWYP1dCr2dJqWab&index=52&t=997s&ab_channel=AlfonsoGonzalez-Astrodynamics%26SEPodcast
 '''
+
 
 def plot():
     plt.style.use('dark_background')
@@ -21,12 +23,12 @@ def plot():
     x = earth_radius * np.cos(u) * np.sin(v)
     y = earth_radius * np.sin(u) * np.sin(v)
     z = earth_radius * np.cos(v)
-    ax.plot_surface(x, y, z, color="blue", alpha=0.5)  # The color and alpha are adjustable
-    ax.grid(False)
-    ax.set_axis_off()  # Esto quita los ejes
+    ax.plot_surface(x, y, z, color="blue", alpha=0.3)  # The color and alpha are adjustable
+    # ax.grid(False)
+    # ax.set_axis_off()  # This deletes axis
     # Draw the satellite's trajectory
-    ax.plot(rs[:, 0], rs[:, 1], rs[:, 2], color="white", linewidth=2)
-
+    ax.plot(rs[:, 0], rs[:, 1], rs[:, 2], color="red", linewidth=1)
+    plt.savefig("3D_orbit.png")
     plt.show()
 
 
@@ -47,7 +49,6 @@ def diff_eq(t, y, mu):  # our differential equation
     ax, ay, az = -r * mu / norm_r ** 3
 
     return [vx, vy, vz, ax, ay, az]
-
 
 
 if __name__ == '__main__':
@@ -77,12 +78,16 @@ if __name__ == '__main__':
     ys[0] = np.array(y0)  # initial condition
     step = 1
 
+    """
+    Here the solver 'ode' initializes with the function 'diff_eq', 
+    which calculates the time derivatives from the current state 'y' and 'mu'
+    """
     solver = ode(diff_eq)
-    solver.set_integrator('lsoda')
-    solver.set_initial_value(y0, 0)
-    solver.set_f_params(earth_mu)
+    solver.set_integrator('lsoda')  # Integration algorithm
+    solver.set_initial_value(y0, 0)  # Initial conditions for t=0
+    solver.set_f_params(earth_mu)  # Introducing the gravitational parameter
 
-    # Propagate the orbit
+    # Orbit propagation
     while solver.successful() and step < n_steps:
         solver.integrate(solver.t + dt)
         ts[step] = solver.t
