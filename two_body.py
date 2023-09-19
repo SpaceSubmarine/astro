@@ -52,6 +52,7 @@ def plot(rs):
 
     ax.set_title('Example Title')
     plt.legend()
+    plt.savefig("3D_orbit.png")
     plt.show()
 
 
