@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import ode
+from mpl_toolkits.mplot3d import Axes3D
 
 earth_radius = 6378  # km
 earth_mu = 398600  # km^3/s^2
@@ -13,6 +14,49 @@ url = https://www.youtube.com/watch?v=7JY44m6eemo&list=PLOIRBaljOV8gn074rWFWYP1d
 '''
 
 
+def plot(rs):
+    plt.style.use('dark_background')
+
+    fig = plt.figure(figsize=(8, 6))
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Plot trajectory
+    # 'w' is the white color for the black background
+    ax.plot(rs[:, 0], rs[:, 1], rs[:, 2], 'b', label='trajectory', marker='')
+    ax.plot([rs[0, 0]], [rs[0, 1]], [rs[0, 2]], 'r', label='Initial position', marker='o', linewidth=2)
+
+    # plot central body
+    _u, _v = np.mgrid[0:2 * np.pi:20j, 0:np.pi:10j]
+    _x = earth_radius * np.cos(_u) * np.sin(_v)
+    _y = earth_radius * np.sin(_u) * np.sin(_v)
+    _z = earth_radius * np.cos(_v)
+    ax.plot_surface(_x, _y, _z, cmap='Blues', alpha=0.6)
+
+    # plot the x,y,z vectors
+    l = earth_radius * 2
+    x, y, z = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+    u, v, w = [[l, 0, 0], [0, l, 0], [0, 0, l]]
+    ax.quiver(x, y, z, u, v, w, color='orange', alpha=0.85)
+
+    max_val = np.max(np.abs(rs))
+
+    ax.set_xlim([-max_val, max_val])
+    ax.set_ylim([-max_val, max_val])
+    ax.set_zlim([-max_val, max_val])
+
+    ax.set_xlabel(['X (km)'])
+    ax.set_ylabel(['Y (km)'])
+    ax.set_zlabel(['Z (km)'])
+
+    # ax.set_aspect('equal')  # can be commented
+
+    ax.set_title('Example Title')
+    plt.legend()
+    plt.show()
+
+
+"""
+# old plot
 def plot():
     plt.style.use('dark_background')
     fig = plt.figure()
@@ -30,6 +74,7 @@ def plot():
     ax.plot(rs[:, 0], rs[:, 1], rs[:, 2], color="red", linewidth=1)
     plt.savefig("3D_orbit.png")
     plt.show()
+"""
 
 
 def diff_eq(t, y, mu):  # our differential equation
@@ -97,4 +142,5 @@ if __name__ == '__main__':
     # extracting values of position from 'ys'
     rs = ys[:, :3]
 
-    plot()
+
+plot(rs)
